@@ -4,12 +4,20 @@ Notionの書き出しZIPを読み込み、note投稿用にタイトル・本文�
 
 ## 現在の正本
 
-- Version: β 0.8
+- Version: β 0.8.1
 - Public URL: https://mori-tools.github.io/notion-note-exporter/
 - Legacy URL: https://notion-note-exporter.hjjhjjnhjjkhjjkmhjjkm.chatgpt.site
 - GitHub: このリポジトリをアプリコードの正本とする
 - Google Drive: 配布ZIP・画像素材・旧バージョンの保管
 - Notion `HARU_MASTER`: 公開URL・保存場所・更新手順の索引
+
+## β 0.8.1 の修正
+
+- 𝕏バナーのURLをプロフィールへ修正
+  - https://x.com/harueizopsy?s=11
+- 質問箱バナーのURLをnote質問箱へ修正
+  - https://note.com/qa/mute_puma7257
+- Service Workerのキャッシュを更新
 
 ## β 0.8 の主な変更
 
