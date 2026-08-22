@@ -1,0 +1,174 @@
+<!doctype html>
+<html lang="ja">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="theme-color" content="#57c56d">
+<link rel="manifest" href="manifest.webmanifest">
+<title>Notion → note 整形ツール</title>
+<style>
+:root{--green:#57c56d;--green2:#eaf8ee;--line:#e7e7e7;--text:#242424;--muted:#777;--bg:#f7f8f7;--card:#fff}
+*{box-sizing:border-box}body{margin:0;background:var(--bg);color:var(--text);font-family:-apple-system,BlinkMacSystemFont,"Hiragino Sans","Yu Gothic",Meiryo,sans-serif}
+header{position:sticky;top:0;z-index:10;background:rgba(255,255,255,.96);backdrop-filter:blur(10px);border-bottom:1px solid var(--line);padding:14px 18px;display:flex;align-items:center;justify-content:space-between}
+.brand{font-weight:700;font-size:22px}.beta{font-size:12px;color:#fff;background:#333;border-radius:999px;padding:4px 8px}.wrap{max-width:880px;margin:0 auto;padding:18px 14px 80px}.card{background:var(--card);border:1px solid var(--line);border-radius:18px;padding:16px;margin-bottom:14px;box-shadow:0 1px 2px rgba(0,0,0,.02)}
+h2{font-size:17px;margin:0 0 12px}.row{display:flex;gap:10px;flex-wrap:wrap}.btn{appearance:none;border:0;border-radius:12px;padding:12px 15px;font-size:15px;font-weight:700;cursor:pointer;background:#eee;color:#222}.btn.primary{background:var(--green);color:white}.btn.soft{background:var(--green2);color:#267638}.btn.danger{background:#fff0f0;color:#b42318;border:1px solid #ffd3d3}.btn:disabled{opacity:.45}
+.fileinput{position:absolute;opacity:0;pointer-events:none}.status{margin-top:10px;color:var(--muted);font-size:13px;line-height:1.5}.ok{color:#267638}.bad{color:#b42318}
+textarea,input[type=text]{width:100%;border:1px solid #dcdcdc;border-radius:12px;background:white;padding:12px;font:inherit;outline:none}textarea:focus,input:focus{border-color:var(--green)}textarea{min-height:170px;resize:vertical;line-height:1.7}.titlebox{font-weight:700}
+.tabs{display:flex;gap:8px;margin-bottom:12px;overflow:auto}.tab{white-space:nowrap;border:1px solid var(--line);background:#fff;border-radius:999px;padding:8px 12px;font-size:13px}.tab.active{background:var(--green2);border-color:#bcebc6;color:#267638;font-weight:700}
+.imggrid{display:grid;grid-template-columns:repeat(auto-fill,minmax(160px,1fr));gap:10px}.imgcard{border:1px solid var(--line);border-radius:12px;padding:8px;background:#fff}.imgcard img{width:100%;aspect-ratio:4/3;object-fit:contain;background:#fafafa;border-radius:8px}.imgname{font-size:11px;color:var(--muted);overflow:hidden;text-overflow:ellipsis;white-space:nowrap;margin:6px 0}.tiny{font-size:12px;padding:8px 10px}.bannergrid{display:grid;gap:14px}.bannercard{border:1px solid var(--line);border-radius:14px;padding:12px;background:#fff}.bannercard h3{font-size:15px;margin:0 0 10px}.bannercard img{width:100%;aspect-ratio:1280/300;object-fit:cover;border-radius:10px;border:1px solid #eee;background:#fafafa}.banneralt{font-size:12px;color:var(--muted);line-height:1.55;margin:8px 0 10px}.bannerurl{font-size:11px;color:var(--muted);word-break:break-all;margin-top:8px}
+.preview{line-height:1.8}.preview h2{font-size:22px;margin:22px 0 10px}.preview h3{font-size:18px;margin:18px 0 8px}.preview blockquote{border-left:4px solid #ddd;margin:12px 0;padding:6px 12px;color:#555}.preview ul,.preview ol{padding-left:1.4em}.preview p{margin:10px 0}.preview a{color:#267638}.note{font-size:12px;color:var(--muted);margin-top:10px}.empty{text-align:center;color:#999;padding:24px 8px}.persist{display:inline-flex;align-items:center;gap:6px;color:#267638;background:var(--green2);border-radius:999px;padding:5px 9px;font-size:12px}
+@media(max-width:520px){.brand{font-size:19px}.wrap{padding:12px 10px 70px}.card{border-radius:14px}.btn{width:100%}.row.compact .btn{width:auto;flex:1}}
+</style>
+</head>
+<body>
+<header><div class="brand">Notion → note 整形ツール</div><div class="beta">β 0.8</div></header>
+<main class="wrap">
+  <section class="card">
+    <h2>Notion書き出しZIPを読み込む</h2>
+    <input id="file" class="fileinput" type="file" accept=".zip,application/zip">
+    <div class="row compact">
+      <button id="loadBtn" class="btn primary">ZIPを選ぶ</button>
+      <button id="clearBtn" class="btn danger">内容をクリア</button>
+    </div>
+    <div id="status" class="status">未読み込み</div>
+    <div class="note">読み込んだ内容はこの端末に自動保存されます。アプリ切替・再読み込み後も復元します。</div>
+  </section>
+
+  <section class="card">
+    <div class="tabs">
+      <button class="tab active" data-tab="title">タイトル</button>
+      <button class="tab" data-tab="body">本文</button>
+      <button class="tab" data-tab="images">画像</button>
+      <button class="tab" data-tab="links">固定バナー・リンク</button>
+      <button class="tab" data-tab="preview">プレビュー</button>
+    </div>
+
+    <div id="pane-title" class="pane">
+      <h2>タイトル</h2>
+      <input id="title" type="text" class="titlebox" placeholder="記事タイトル">
+      <div class="row compact" style="margin-top:10px"><button id="copyTitle" class="btn soft">タイトルをコピー</button></div>
+    </div>
+
+    <div id="pane-body" class="pane" hidden>
+      <h2>本文</h2>
+      <textarea id="body" placeholder="本文"></textarea>
+      <div class="row compact" style="margin-top:10px"><button id="copyBody" class="btn soft">本文をnote用にコピー</button><button id="copyPlain" class="btn">プレーンコピー</button></div>
+      <div class="note">Notionの`&lt;aside&gt;`、色付き`&lt;span&gt;`、`&lt;empty-block/&gt;`などは自動除去します。画像Markdownは本文コピーから外し、画像タブに分離します。</div>
+    </div>
+
+    <div id="pane-images" class="pane" hidden>
+      <h2>画像</h2>
+      <div id="images" class="imggrid"><div class="empty">画像はありません</div></div>
+    </div>
+
+    <div id="pane-links" class="pane" hidden>
+      <h2>固定バナー・リンク</h2>
+      <div class="bannergrid">
+        <div class="bannercard" data-banner="tools">
+          <h3>HARU TOOLS</h3>
+          <img src="banner-haru-tools.png" alt="HARU TOOLSの紹介バナー。動画編集者向けのヒアリング・修正管理・納品チェック・見積管理などの実務ツールを紹介。">
+          <div class="banneralt">ALT：HARU TOOLSの紹介バナー。動画編集者向けのヒアリング・修正管理・納品チェック・見積管理などの実務ツールを紹介。</div>
+          <div class="row compact">
+            <button class="btn soft tiny" data-copy-banner-image="banner-haru-tools.png">画像をコピー</button>
+            <button class="btn tiny" data-copy-text="HARU TOOLSの紹介バナー。動画編集者向けのヒアリング・修正管理・納品チェック・見積管理などの実務ツールを紹介。">ALTをコピー</button>
+            <button class="btn tiny" data-copy-text="https://haru-tools.booth.pm/">URLをコピー</button>
+          </div>
+          <div class="bannerurl">https://haru-tools.booth.pm/</div>
+        </div>
+
+        <div class="bannercard" data-banner="x">
+          <h3>𝕏</h3>
+          <img src="banner-x.png" alt="𝕏の紹介バナー。映像制作の現場で感じた、仕事や演出の気付きを発信していることを紹介。">
+          <div class="banneralt">ALT：𝕏の紹介バナー。映像制作の現場で感じた、仕事や演出の気付きを発信していることを紹介。</div>
+          <div class="row compact">
+            <button class="btn soft tiny" data-copy-banner-image="banner-x.png">画像をコピー</button>
+            <button class="btn tiny" data-copy-text="𝕏の紹介バナー。映像制作の現場で感じた、仕事や演出の気付きを発信していることを紹介。">ALTをコピー</button>
+            <button class="btn tiny" data-copy-text="https://x.com/">URLをコピー</button>
+          </div>
+          <div class="bannerurl">https://x.com/</div>
+        </div>
+
+        <div class="bannercard" data-banner="question">
+          <h3>質問箱</h3>
+          <img src="banner-question.png" alt="質問箱の案内バナー。映像制作や仕事について気軽に質問できることを紹介。">
+          <div class="banneralt">ALT：質問箱の案内バナー。映像制作や仕事について気軽に質問できることを紹介。</div>
+          <div class="row compact">
+            <button class="btn soft tiny" data-copy-banner-image="banner-question.png">画像をコピー</button>
+            <button class="btn tiny" data-copy-text="質問箱の案内バナー。映像制作や仕事について気軽に質問できることを紹介。">ALTをコピー</button>
+            <button class="btn tiny" data-copy-text="https://peing.net">URLをコピー</button>
+          </div>
+          <div class="bannerurl">https://peing.net</div>
+        </div>
+      </div>
+      <div class="note">記事末尾で使う固定素材です。画像・ALT・URLをそれぞれ個別にコピーできます。</div>
+    </div>
+
+    <div id="pane-preview" class="pane" hidden>
+      <h2>プレビュー</h2>
+      <div id="preview" class="preview empty">まだ内容がありません</div>
+    </div>
+  </section>
+</main>
+<script>
+const $=s=>document.querySelector(s);const $$=s=>[...document.querySelectorAll(s)];
+let state={title:'',body:'',images:[],sourceName:'',savedAt:null};
+const DB='notion-note-exporter',STORE='state',KEY='current';
+function openDB(){return new Promise((res,rej)=>{const r=indexedDB.open(DB,1);r.onupgradeneeded=()=>r.result.createObjectStore(STORE);r.onsuccess=()=>res(r.result);r.onerror=()=>rej(r.error)})}
+async function dbSet(v){const db=await openDB();return new Promise((res,rej)=>{const tx=db.transaction(STORE,'readwrite');tx.objectStore(STORE).put(v,KEY);tx.oncomplete=res;tx.onerror=()=>rej(tx.error)})}
+async function dbGet(){const db=await openDB();return new Promise((res,rej)=>{const r=db.transaction(STORE).objectStore(STORE).get(KEY);r.onsuccess=()=>res(r.result);r.onerror=()=>rej(r.error)})}
+async function dbClear(){const db=await openDB();return new Promise((res,rej)=>{const r=db.transaction(STORE,'readwrite').objectStore(STORE).delete(KEY);r.onsuccess=res;r.onerror=()=>rej(r.error)})}
+
+function u16(v,o){return v.getUint16(o,true)} function u32(v,o){return v.getUint32(o,true)}
+async function inflateRaw(bytes){if(typeof DecompressionStream==='undefined')throw new Error('このブラウザはZIP展開に対応していません');const ds=new DecompressionStream('deflate-raw');const ab=await new Response(new Blob([bytes]).stream().pipeThrough(ds)).arrayBuffer();return new Uint8Array(ab)}
+async function unzip(buffer){const bytes=new Uint8Array(buffer),v=new DataView(buffer);let e=-1;for(let i=bytes.length-22;i>=Math.max(0,bytes.length-65557);i--){if(u32(v,i)===0x06054b50){e=i;break}}if(e<0)throw new Error('ZIPの終端情報が見つかりません');const total=u16(v,e+10),cdOff=u32(v,e+16);let p=cdOff;const out=[];for(let n=0;n<total;n++){if(u32(v,p)!==0x02014b50)break;const method=u16(v,p+10),csize=u32(v,p+20),usize=u32(v,p+24),nlen=u16(v,p+28),xlen=u16(v,p+30),clen=u16(v,p+32),loff=u32(v,p+42);const name=new TextDecoder('utf-8').decode(bytes.slice(p+46,p+46+nlen));p+=46+nlen+xlen+clen;if(name.endsWith('/'))continue;if(u32(v,loff)!==0x04034b50)continue;const ln=u16(v,loff+26),lx=u16(v,loff+28),start=loff+30+ln+lx;const comp=bytes.slice(start,start+csize);let data;if(method===0)data=comp;else if(method===8)data=await inflateRaw(comp);else continue;out.push({name,data,usize})}return out}
+async function unzipRecursive(buffer,prefix=''){let files=await unzip(buffer),result=[];for(const f of files){const low=f.name.toLowerCase();if(low.endsWith('.zip')){try{const nested=await unzipRecursive(f.data.buffer.slice(f.data.byteOffset,f.data.byteOffset+f.data.byteLength),prefix+f.name+'/');result.push(...nested)}catch{result.push({name:prefix+f.name,data:f.data})}}else result.push({name:prefix+f.name,data:f.data})}return result}
+
+function decodeText(bytes){try{return new TextDecoder('utf-8',{fatal:true}).decode(bytes)}catch{return new TextDecoder('utf-8').decode(bytes)}}
+function cleanBody(md){
+  md=md.replace(/<aside[^>]*>/gi,'').replace(/<\/aside>/gi,'')
+       .replace(/<span\s+color=["'][^"']+["']>/gi,'').replace(/<\/span>/gi,'')
+       .replace(/<empty-block\s*\/?>/gi,'')
+       .replace(/<callout[^>]*>/gi,'').replace(/<\/callout>/gi,'')
+       .replace(/^\s*↑.*$/gm,'');
+  md=md.replace(/!\[[^\]]*\]\([^\)]+\)\s*/g,'');
+  md=md.replace(/^ALT：.*$/gm,'');
+  md=md.replace(/\n{3,}/g,'\n\n').trim();
+  return md;
+}
+function parseNotionMarkdown(md){
+  md=md.replace(/^\uFEFF/,'');const lines=md.split(/\r?\n/);let title='';let i=0;
+  if(lines[0]?.startsWith('# ')){title=lines[0].slice(2).trim();i=1}
+  while(i<lines.length&&lines[i].trim()==='')i++;
+  let propStart=i,seenProp=false;
+  while(i<lines.length){const t=lines[i].trim();if(t===''){if(seenProp){i++;break}else{i++;continue}}if(/^[^:#]{1,40}:\s/.test(t)){seenProp=true;i++;continue}break}
+  if(!seenProp)i=propStart;
+  while(i<lines.length&&lines[i].trim()==='')i++;
+  const body=cleanBody(lines.slice(i).join('\n'));
+  return{title,body};
+}
+function esc(s){return s.replace(/[&<>]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;'}[c]))}
+function inline(s){s=esc(s);s=s.replace(/\[([^\]]+)\]\((https?:\/\/[^\s\)]+)\)/g,'<a href="$2">$1</a>');s=s.replace(/`([^`]+)`/g,'<code>$1</code>');return s}
+function mdToHtml(md){const lines=md.split('\n');let html='',list=null;const close=()=>{if(list){html+=`</${list}>`;list=null}};for(const raw of lines){const l=raw.trimEnd();if(!l.trim()){close();continue}let m;if((m=l.match(/^###\s+(.+)/))){close();html+=`<h3>${inline(m[1])}</h3>`}else if((m=l.match(/^##\s+(.+)/))){close();html+=`<h2>${inline(m[1])}</h2>`}else if((m=l.match(/^>\s?(.*)/))){close();html+=`<blockquote>${inline(m[1])}</blockquote>`}else if((m=l.match(/^[-*]\s+(.+)/))){if(list!=='ul'){close();list='ul';html+='<ul>'}html+=`<li>${inline(m[1])}</li>`}else if((m=l.match(/^\d+[\.．]\s*(.+)/))){if(list!=='ol'){close();list='ol';html+='<ol>'}html+=`<li>${inline(m[1])}</li>`}else{close();html+=`<p>${inline(l)}</p>`}}close();return html}
+
+async function clipboardRich(html,text){if(navigator.clipboard?.write&&window.ClipboardItem){await navigator.clipboard.write([new ClipboardItem({'text/html':new Blob([html],{type:'text/html'}),'text/plain':new Blob([text],{type:'text/plain'})})])}else await navigator.clipboard.writeText(text)}
+function saveSoon(){state.title=$('#title').value;state.body=$('#body').value;state.savedAt=Date.now();dbSet(state).then(()=>setStatus(`端末に自動保存済み　${new Date().toLocaleTimeString('ja-JP',{hour:'2-digit',minute:'2-digit'})}`,true));renderPreview()}
+let timer;function autosave(){clearTimeout(timer);timer=setTimeout(saveSoon,300)}
+function setStatus(t,ok=false,bad=false){$('#status').innerHTML=`<span class="${ok?'ok':bad?'bad':''}">${t}</span>`}
+function renderPreview(){const t=$('#title').value.trim(),b=$('#body').value.trim();$('#preview').className='preview'+(!t&&!b?' empty':'');$('#preview').innerHTML=(!t&&!b)?'まだ内容がありません':`${t?`<h1 style="font-size:26px">${esc(t)}</h1>`:''}${mdToHtml(b)}`}
+function renderImages(){const box=$('#images');box.innerHTML='';if(!state.images?.length){box.innerHTML='<div class="empty">画像はありません</div>';return}state.images.forEach((im,i)=>{const url=URL.createObjectURL(im.blob);const d=document.createElement('div');d.className='imgcard';d.innerHTML=`<img src="${url}" alt=""><div class="imgname">${esc(im.name.split('/').pop())}</div><div class="row compact"><button class="btn soft tiny" data-img="${i}">画像をコピー</button></div>`;box.appendChild(d)});box.querySelectorAll('[data-img]').forEach(b=>b.onclick=async()=>{const im=state.images[+b.dataset.img];try{await navigator.clipboard.write([new ClipboardItem({[im.blob.type||'image/png']:im.blob})]);b.textContent='コピー済み ✓';setTimeout(()=>b.textContent='画像をコピー',1200)}catch(e){alert('画像コピーに失敗しました。画像を長押しして保存してください。')}})}
+async function loadZip(file){setStatus('ZIPを読み込み中…');try{const files=await unzipRecursive(await file.arrayBuffer());const mdFiles=files.filter(f=>f.name.toLowerCase().endsWith('.md'));if(!mdFiles.length)throw new Error('Markdown記事が見つかりません');let best=mdFiles.sort((a,b)=>b.data.length-a.data.length)[0];const parsed=parseNotionMarkdown(decodeText(best.data));const imgs=files.filter(f=>/\.(png|jpe?g|webp|gif)$/i.test(f.name)).map(f=>{const ext=(f.name.match(/\.([^.]+)$/)||[])[1]?.toLowerCase();const type=ext==='png'?'image/png':ext==='jpg'||ext==='jpeg'?'image/jpeg':ext==='webp'?'image/webp':'image/gif';return{name:f.name,blob:new Blob([f.data],{type})}});state={title:parsed.title,body:parsed.body,images:imgs,sourceName:file.name,savedAt:Date.now()};$('#title').value=state.title;$('#body').value=state.body;await dbSet(state);renderImages();renderPreview();setStatus(`読み込み完了：${esc(file.name)} ／ 画像 ${imgs.length}枚　<span class="persist">● 自動保存中</span>`,true)}catch(e){console.error(e);setStatus(`読み込み失敗：${esc(e.message||String(e))}`,false,true)}}
+
+$('#loadBtn').onclick=()=>$('#file').click();$('#file').onchange=e=>{const f=e.target.files[0];if(f)loadZip(f);e.target.value=''};
+$('#clearBtn').onclick=async()=>{if(!confirm('読み込んだ内容をこの端末から消しますか？'))return;await dbClear();state={title:'',body:'',images:[],sourceName:'',savedAt:null};$('#title').value='';$('#body').value='';renderImages();renderPreview();setStatus('内容をクリアしました',true)};
+$('#title').addEventListener('input',autosave);$('#body').addEventListener('input',autosave);
+$('#copyTitle').onclick=async()=>{await navigator.clipboard.writeText($('#title').value);$('#copyTitle').textContent='コピー済み ✓';setTimeout(()=>$('#copyTitle').textContent='タイトルをコピー',1000)};
+$('#copyBody').onclick=async()=>{const text=$('#body').value,html=mdToHtml(text);await clipboardRich(html,text);$('#copyBody').textContent='コピー済み ✓';setTimeout(()=>$('#copyBody').textContent='本文をnote用にコピー',1000)};
+$('#copyPlain').onclick=async()=>{await navigator.clipboard.writeText($('#body').value);$('#copyPlain').textContent='コピー済み ✓';setTimeout(()=>$('#copyPlain').textContent='プレーンコピー',1000)};
+function copiedFeedback(btn,label){const old=btn.textContent;btn.textContent='コピー済み ✓';setTimeout(()=>btn.textContent=label||old,1100)}
+$$('[data-copy-text]').forEach(btn=>btn.onclick=async()=>{try{await navigator.clipboard.writeText(btn.dataset.copyText);copiedFeedback(btn,btn.textContent.includes('ALT')?'ALTをコピー':'URLをコピー')}catch(e){alert('コピーに失敗しました')}});
+$$('[data-copy-banner-image]').forEach(btn=>btn.onclick=async()=>{try{const r=await fetch(btn.dataset.copyBannerImage,{cache:'no-store'});const blob=await r.blob();let out=blob;if(blob.type!=='image/png'){const bmp=await createImageBitmap(blob);const c=document.createElement('canvas');c.width=bmp.width;c.height=bmp.height;c.getContext('2d').drawImage(bmp,0,0);out=await new Promise(res=>c.toBlob(res,'image/png'))}await navigator.clipboard.write([new ClipboardItem({'image/png':out})]);copiedFeedback(btn,'画像をコピー')}catch(e){console.error(e);alert('画像コピーに失敗しました。Safariではサイトのクリップボード許可を確認してください。')}});
+$$('.tab').forEach(t=>t.onclick=()=>{$$('.tab').forEach(x=>x.classList.toggle('active',x===t));$$('.pane').forEach(p=>p.hidden=p.id!==`pane-${t.dataset.tab}`);if(t.dataset.tab==='preview')renderPreview()});
+
+(async()=>{try{const old=await dbGet();if(old){state=old;$('#title').value=old.title||'';$('#body').value=old.body||'';renderImages();renderPreview();setStatus(`前回の内容を復元しました${old.sourceName?'：'+esc(old.sourceName):''}　<span class="persist">● 端末保存済み</span>`,true)}else renderPreview()}catch(e){setStatus('保存データの復元に失敗しました',false,true)}if('serviceWorker'in navigator)navigator.serviceWorker.register('./sw.js').catch(()=>{})})();
+</script>
+</body></html>
