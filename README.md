@@ -5,7 +5,8 @@ Notionの書き出しZIPを読み込み、note投稿用にタイトル・本文�
 ## 現在の正本
 
 - Version: β 0.8
-- Public URL: https://notion-note-exporter.hjjhjjnhjjkhjjkmhjjkm.chatgpt.site
+- Public URL: https://mori-tools.github.io/notion-note-exporter/
+- Legacy URL: https://notion-note-exporter.hjjhjjnhjjkhjjkmhjjkm.chatgpt.site
 - GitHub: このリポジトリをアプリコードの正本とする
 - Google Drive: 配布ZIP・画像素材・旧バージョンの保管
 - Notion `HARU_MASTER`: 公開URL・保存場所・更新手順の索引
@@ -24,10 +25,11 @@ Notionの書き出しZIPを読み込み、note投稿用にタイトル・本文�
 1. 修正前に main の最新版を確認する。
 2. 修正はGitHubのコードを正本として行う。
 3. リリース前に既存機能と追加機能を確認する。
-4. 配布用ZIPはGoogle Drive `HARU_MASTER / 01_APPS / Notion_note_exporter / 01_LATEST` に保存する。
-5. 旧版はGoogle Drive `02_VERSIONS` に残す。
-6. 固定画像はGoogle Drive `03_ASSETS` に保存する。
-7. 公開後に `HARU_MASTER` のバージョン・変更内容・公開状態を更新する。
+4. mainへの更新後、GitHub Pagesが自動デプロイされる。
+5. 配布用ZIPはGoogle Drive `HARU_MASTER / 01_APPS / Notion_note_exporter / 01_LATEST` に保存する。
+6. 旧版はGoogle Drive `02_VERSIONS` に残す。
+7. 固定画像はGoogle Drive `03_ASSETS` に保存する。
+8. 公開後に `HARU_MASTER` のバージョン・変更内容・公開状態を更新する。
 
 ## ファイル構成
 
@@ -41,4 +43,4 @@ Notionの書き出しZIPを読み込み、note投稿用にタイトル・本文�
 
 ## 管理方針
 
-今後はZIPや過去チャットを編集元として扱わず、このGitHubリポジトリの `main` をコードの唯一の正本とする。
+今後はZIPや過去チャットを編集元として扱わず、このGitHubリポジトリの `main` をコードの唯一の正本とする。公開はGitHub Pagesを使用し、main更新で公開版へ自動反映する。
