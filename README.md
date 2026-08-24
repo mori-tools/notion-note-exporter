@@ -4,12 +4,20 @@ Notionの書き出しZIPを読み込み、note投稿用にタイトル・本文�
 
 ## 現在の正本
 
-- Version: β 0.8.1
+- Version: β 0.8.2
 - Public URL: https://mori-tools.github.io/notion-note-exporter/
 - Legacy URL: https://notion-note-exporter.hjjhjjnhjjkhjjkmhjjkm.chatgpt.site
 - GitHub: このリポジトリをアプリコードの正本とする
 - Google Drive: 配布ZIP・画像素材・旧バージョンの保管
 - Notion `HARU_MASTER`: 公開URL・保存場所・更新手順の索引
+
+## β 0.8.2 の修正
+
+- Notionページ内に企画メモ・Claude初稿・添削履歴が残っていても、公開稿だけを書き出せるように修正
+- Markdown内の見出しから「公開稿」または「公開稿候補」を含む最後の見出しを検出し、その直後から本文末尾までを抽出
+- 公開稿見出しが存在しない従来ページは、これまで通り本文全体を読み込むフォールバックを維持
+- Service Workerのキャッシュを β 0.8.2 用へ更新
+- `publish-extractor.js` を追加
 
 ## β 0.8.1 の修正
 
@@ -42,6 +50,7 @@ Notionの書き出しZIPを読み込み、note投稿用にタイトル・本文�
 ## ファイル構成
 
 - `index.html` — アプリ本体
+- `publish-extractor.js` — 公開稿抽出ロジック
 - `sw.js` — Service Worker
 - `manifest.webmanifest` — PWA設定
 - `icon.svg` — アイコン
