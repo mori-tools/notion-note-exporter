@@ -21,7 +21,7 @@ textarea,input[type=text]{width:100%;border:1px solid #dcdcdc;border-radius:12px
 </style>
 </head>
 <body>
-<header><div class="brand">Notion → note 整形ツール</div><div class="head-actions"><button id="updateBtn" class="updatebtn" type="button" aria-label="最新版に更新">↻ 更新</button><div class="beta">β 0.8.6</div></div></header>
+<header><div class="brand">Notion → note 整形ツール</div><div class="head-actions"><button id="updateBtn" class="updatebtn" type="button" aria-label="最新版に更新">↻ 更新</button><div class="beta">β 0.8.7</div></div></header>
 <main class="wrap">
   <section class="card">
     <h2>Notion書き出しZIPを読み込む</h2>
@@ -111,7 +111,7 @@ textarea,input[type=text]{width:100%;border:1px solid #dcdcdc;border-radius:12px
 </main>
 <script>
 const $=s=>document.querySelector(s);const $$=s=>[...document.querySelectorAll(s)];
-const APP_VERSION='0.8.6';
+const APP_VERSION='0.8.7';
 const UPDATED_FLAG='notion-note-just-updated';
 let state={title:'',body:'',images:[],sourceName:'',savedAt:null};
 const DB='notion-note-exporter',STORE='state',KEY='current';
