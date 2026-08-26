@@ -1,4 +1,4 @@
-const C='notion-note-beta086-v1';
+const C='notion-note-beta087-v1';
 const A=['./','./index.html','./manifest.webmanifest','./icon.svg','./banner-haru-tools.png','./banner-x.png','./banner-question.png','./publish-extractor.js','./version.json'];
 
 function injectExtractor(response){
@@ -15,8 +15,18 @@ function injectExtractor(response){
 
 self.addEventListener('message',e=>{if(e.data?.type==='SKIP_WAITING')self.skipWaiting()});
 
+async function precacheFresh(){
+  const cache=await caches.open(C);
+  await Promise.all(A.map(async path=>{
+    const join=path.includes('?')?'&':'?';
+    const response=await fetch(`${path}${join}v=087`,{cache:'reload'});
+    if(!response.ok)throw new Error(`Precache failed: ${path}`);
+    await cache.put(path,response);
+  }));
+}
+
 self.addEventListener('install',e=>e.waitUntil(
-  caches.open(C).then(c=>c.addAll(A)).then(()=>self.skipWaiting())
+  precacheFresh().then(()=>self.skipWaiting())
 ));
 
 self.addEventListener('activate',e=>e.waitUntil(
