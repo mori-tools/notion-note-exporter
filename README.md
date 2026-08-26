@@ -4,12 +4,20 @@ Notionの書き出しZIPを読み込み、note投稿用にタイトル・本文�
 
 ## 現在の正本
 
-- Version: β 0.8.7
+- Version: β 0.8.8
 - Public URL: https://mori-tools.github.io/notion-note-exporter/
 - Legacy URL: https://notion-note-exporter.hjjhjjnhjjkhjjkmhjjkm.chatgpt.site
 - GitHub: このリポジトリをアプリコードの正本とする
 - Google Drive: 配布ZIP・画像素材・旧バージョンの保管
 - Notion `HARU_MASTER`: 公開URL・保存場所・更新手順の索引
+
+## β 0.8.8 の修正
+
+- 「▼▼▼ note公開本文｜ここから ▼▼▼」と「▲▲▲ note公開本文｜ここまで ▲▲▲」の間だけを抽出
+- 開始・終了マーカー自体と、その前後にある記事設計・レビュー・公開前残件を本文から除外
+- マーカーの片側欠損・重複・順序逆転・本文空欄を検出した場合は本文コピーを停止
+- 旧記事の「公開稿」「公開稿候補」「note本文初稿」方式との互換性を維持
+- Service Workerのキャッシュを β 0.8.8 用へ更新
 
 ## β 0.8.7 の修正
 
