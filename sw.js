@@ -1,4 +1,4 @@
-const C='notion-note-beta087-v1';
+const C='notion-note-beta088-v1';
 const A=['./','./index.html','./manifest.webmanifest','./icon.svg','./banner-haru-tools.png','./banner-x.png','./banner-question.png','./publish-extractor.js','./version.json'];
 
 function injectExtractor(response){
@@ -19,7 +19,7 @@ async function precacheFresh(){
   const cache=await caches.open(C);
   await Promise.all(A.map(async path=>{
     const join=path.includes('?')?'&':'?';
-    const response=await fetch(`${path}${join}v=087`,{cache:'reload'});
+    const response=await fetch(`${path}${join}v=088`,{cache:'reload'});
     if(!response.ok)throw new Error(`Precache failed: ${path}`);
     await cache.put(path,response);
   }));
