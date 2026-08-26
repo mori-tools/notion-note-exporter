@@ -1,5 +1,5 @@
-const C='notion-note-beta084-v1';
-const A=['./','./index.html','./manifest.webmanifest','./icon.svg','./banner-haru-tools.png','./banner-x.png','./banner-question.png','./publish-extractor.js'];
+const C='notion-note-beta085-v1';
+const A=['./','./index.html','./manifest.webmanifest','./icon.svg','./banner-haru-tools.png','./banner-x.png','./banner-question.png','./publish-extractor.js','./version.json'];
 
 function injectExtractor(response){
   if(!response)return response;
@@ -12,6 +12,8 @@ function injectExtractor(response){
     return new Response(text,{status:response.status,statusText:response.statusText,headers});
   });
 }
+
+self.addEventListener('message',e=>{if(e.data?.type==='SKIP_WAITING')self.skipWaiting()});
 
 self.addEventListener('install',e=>e.waitUntil(
   caches.open(C).then(c=>c.addAll(A)).then(()=>self.skipWaiting())
