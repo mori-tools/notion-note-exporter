@@ -1,4 +1,4 @@
-const C='notion-note-beta085-v1';
+const C='notion-note-beta086-v1';
 const A=['./','./index.html','./manifest.webmanifest','./icon.svg','./banner-haru-tools.png','./banner-x.png','./banner-question.png','./publish-extractor.js','./version.json'];
 
 function injectExtractor(response){
