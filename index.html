@@ -21,7 +21,7 @@ textarea,input[type=text]{width:100%;border:1px solid #dcdcdc;border-radius:12px
 </style>
 </head>
 <body>
-<header><div class="brand">Notion → note 整形ツール</div><div class="beta">β 0.8.1</div></header>
+<header><div class="brand">Notion → note 整形ツール</div><div class="beta">β 0.8.4</div></header>
 <main class="wrap">
   <section class="card">
     <h2>Notion書き出しZIPを読み込む</h2>
@@ -171,4 +171,5 @@ $$('.tab').forEach(t=>t.onclick=()=>{$$('.tab').forEach(x=>x.classList.toggle('a
 
 (async()=>{try{const old=await dbGet();if(old){state=old;$('#title').value=old.title||'';$('#body').value=old.body||'';renderImages();renderPreview();setStatus(`前回の内容を復元しました${old.sourceName?'：'+esc(old.sourceName):''}　<span class="persist">● 端末保存済み</span>`,true)}else renderPreview()}catch(e){setStatus('保存データの復元に失敗しました',false,true)}if('serviceWorker'in navigator)navigator.serviceWorker.register('./sw.js').catch(()=>{})})();
 </script>
+<script src="./publish-extractor.js"></script>
 </body></html>
