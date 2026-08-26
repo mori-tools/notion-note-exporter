@@ -4,12 +4,18 @@ Notionの書き出しZIPを読み込み、note投稿用にタイトル・本文�
 
 ## 現在の正本
 
-- Version: β 0.8.6
+- Version: β 0.8.7
 - Public URL: https://mori-tools.github.io/notion-note-exporter/
 - Legacy URL: https://notion-note-exporter.hjjhjjnhjjkhjjkmhjjkm.chatgpt.site
 - GitHub: このリポジトリをアプリコードの正本とする
 - Google Drive: 配布ZIP・画像素材・旧バージョンの保管
 - Notion `HARU_MASTER`: 公開URL・保存場所・更新手順の索引
+
+## β 0.8.7 の修正
+
+- Service Workerの事前キャッシュ取得時に通常のブラウザキャッシュを使わず、全アプリファイルをネットワークから再取得するよう修正
+- 更新後に補助JSだけ旧版が残り、バージョン表示が戻る問題を解消
+- β0.8.6以前から更新ボタンだけでβ0.8.7へ切り替わることを検証
 
 ## β 0.8.6 の修正
 
