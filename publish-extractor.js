@@ -60,7 +60,7 @@
   setTimeout(trimToPublishedDraft,1000);
 
   const beta=document.querySelector('.beta');
-  if(beta)beta.textContent='β 0.8.6';
+  if(beta)beta.textContent='β 0.8.7';
 
   const bodyNote=document.querySelector('#pane-body .note');
   if(bodyNote){
