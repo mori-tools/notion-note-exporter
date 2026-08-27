@@ -4,12 +4,22 @@ Notionの書き出しZIPを読み込み、note投稿用にタイトル・本文�
 
 ## 現在の正本
 
-- Version: β 0.8.8
+- Version: β 0.9.0
 - Public URL: https://mori-tools.github.io/notion-note-exporter/
 - Legacy URL: https://notion-note-exporter.hjjhjjnhjjkhjjkmhjjkm.chatgpt.site
 - GitHub: このリポジトリをアプリコードの正本とする
 - Google Drive: 配布ZIP・画像素材・旧バージョンの保管
 - Notion `HARU_MASTER`: 公開URL・保存場所・更新手順の索引
+
+## β 0.9.0 の修正
+
+- OS本文コピーゲートを追加し、自動検査の不合格時は本文コピーを停止
+- 制作側のメタ表現、作業用マーカー、OS禁止の地の文を自動検出
+- 違反箇所を行番号・該当文付きで表示
+- 目次・有料ラインの位置を別表示し、コピー本文から位置マーカーを自動除外
+- note入稿後に必要な目次、有料ライン、ALT、リンク、スマホ通読の手動チェックを表示
+- 検査結果をテキストでコピーできる監査記録を追加
+- Service Workerのキャッシュを β 0.9.0 用へ更新
 
 ## β 0.8.8 の修正
 
@@ -88,6 +98,7 @@ Notionの書き出しZIPを読み込み、note投稿用にタイトル・本文�
 
 - `index.html` — アプリ本体
 - `publish-extractor.js` — 公開稿抽出ロジック
+- `preflight.js` — OS公開前ゲートの検査ロジック
 - `sw.js` — Service Worker
 - `manifest.webmanifest` — PWA設定
 - `icon.svg` — アイコン

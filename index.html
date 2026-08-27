@@ -17,11 +17,12 @@ textarea,input[type=text]{width:100%;border:1px solid #dcdcdc;border-radius:12px
 .tabs{display:flex;gap:8px;margin-bottom:12px;overflow:auto}.tab{white-space:nowrap;border:1px solid var(--line);background:#fff;border-radius:999px;padding:8px 12px;font-size:13px}.tab.active{background:var(--green2);border-color:#bcebc6;color:#267638;font-weight:700}
 .imggrid{display:grid;grid-template-columns:repeat(auto-fill,minmax(160px,1fr));gap:10px}.imgcard{border:1px solid var(--line);border-radius:12px;padding:8px;background:#fff}.imgcard img{width:100%;aspect-ratio:4/3;object-fit:contain;background:#fafafa;border-radius:8px}.imgname{font-size:11px;color:var(--muted);overflow:hidden;text-overflow:ellipsis;white-space:nowrap;margin:6px 0}.tiny{font-size:12px;padding:8px 10px}.bannergrid{display:grid;gap:14px}.bannercard{border:1px solid var(--line);border-radius:14px;padding:12px;background:#fff}.bannercard h3{font-size:15px;margin:0 0 10px}.bannercard img{width:100%;aspect-ratio:1280/300;object-fit:cover;border-radius:10px;border:1px solid #eee;background:#fafafa}.banneralt{font-size:12px;color:var(--muted);line-height:1.55;margin:8px 0 10px}.bannerurl{font-size:11px;color:var(--muted);word-break:break-all;margin-top:8px}
 .preview{line-height:1.8}.preview h2{font-size:22px;margin:22px 0 10px}.preview h3{font-size:18px;margin:18px 0 8px}.preview blockquote{border-left:4px solid #ddd;margin:12px 0;padding:6px 12px;color:#555}.preview ul,.preview ol{padding-left:1.4em}.preview p{margin:10px 0}.preview a{color:#267638}.note{font-size:12px;color:var(--muted);margin-top:10px}.empty{text-align:center;color:#999;padding:24px 8px}.persist{display:inline-flex;align-items:center;gap:6px;color:#267638;background:var(--green2);border-radius:999px;padding:5px 9px;font-size:12px}
+.preflight-panel{margin-top:14px;border:1px solid #d9e3dc;border-radius:14px;padding:13px;background:#fbfdfb}.preflight-head{display:flex;align-items:center;justify-content:space-between;gap:12px}.preflight-head h3{font-size:15px;margin:0}.gate-badge{font-size:12px;font-weight:800;border-radius:999px;padding:4px 9px}.gate-wait{background:#f0f0f0;color:#666}.gate-ok{background:#def5e4;color:#176b2c}.gate-bad{background:#ffe3e0;color:#a61b12}.preflight-summary{font-size:12px;line-height:1.6;color:#555;margin:8px 0}.gate-checks{display:grid;gap:5px}.gate-check{font-size:12px;display:flex;gap:7px;align-items:flex-start}.gate-check.pass{color:#267638}.gate-check.fail{color:#b42318;font-weight:700}.gate-issues{margin-top:9px}.issue-title,.placement-title,.manual-title{font-size:12px;font-weight:800;margin-bottom:6px}.gate-issue{font-size:12px;color:#b42318;background:#fff2f1;border:1px solid #ffd8d3;border-radius:9px;padding:8px;margin-top:6px}.gate-issue code{display:block;margin-top:5px;color:#7a241d;white-space:normal;word-break:break-word}.gate-placements{margin-top:10px}.placement-row{font-size:12px;line-height:1.55;background:#eef6ff;border-radius:8px;padding:7px 8px;margin-top:5px}.manual-gate{margin:12px 0 10px;padding-top:10px;border-top:1px solid #e5e9e6}.manual-checks{display:grid;gap:6px}.manual-checks label{font-size:12px;display:flex;align-items:flex-start;gap:6px}.manual-checks input{margin-top:2px}.manual-status{font-size:12px;font-weight:700;margin-top:8px}.manual-ok{color:#267638}.manual-pending{color:#996000}
 @media(max-width:520px){.brand{font-size:19px}.wrap{padding:12px 10px 70px}.card{border-radius:14px}.btn{width:100%}.row.compact .btn{width:auto;flex:1}}
 </style>
 </head>
 <body>
-<header><div class="brand">Notion → note 整形ツール</div><div class="head-actions"><button id="updateBtn" class="updatebtn" type="button" aria-label="最新版に更新">↻ 更新</button><div class="beta">β 0.8.8</div></div></header>
+<header><div class="brand">Notion → note 整形ツール</div><div class="head-actions"><button id="updateBtn" class="updatebtn" type="button" aria-label="最新版に更新">↻ 更新</button><div class="beta">β 0.9.0</div></div></header>
 <main class="wrap">
   <section class="card">
     <h2>Notion書き出しZIPを読み込む</h2>
@@ -111,7 +112,7 @@ textarea,input[type=text]{width:100%;border:1px solid #dcdcdc;border-radius:12px
 </main>
 <script>
 const $=s=>document.querySelector(s);const $$=s=>[...document.querySelectorAll(s)];
-const APP_VERSION='0.8.8';
+const APP_VERSION='0.9.0';
 const UPDATED_FLAG='notion-note-just-updated';
 let state={title:'',body:'',images:[],sourceName:'',savedAt:null};
 const DB='notion-note-exporter',STORE='state',KEY='current';
@@ -217,7 +218,7 @@ async function updateApp(){
     btn.disabled=false;
   }
 }
-function renderPreview(){const t=$('#title').value.trim(),b=$('#body').value.trim();$('#preview').className='preview'+(!t&&!b?' empty':'');$('#preview').innerHTML=(!t&&!b)?'まだ内容がありません':`${t?`<h1 style="font-size:26px">${esc(t)}</h1>`:''}${mdToHtml(b)}`}
+function renderPreview(){const t=$('#title').value.trim(),raw=$('#body').value.trim(),b=window.NotePreflight?window.NotePreflight.extractEditorialMarkers(raw).body:raw;$('#preview').className='preview'+(!t&&!b?' empty':'');$('#preview').innerHTML=(!t&&!b)?'まだ内容がありません':`${t?`<h1 style="font-size:26px">${esc(t)}</h1>`:''}${mdToHtml(b)}`}
 function renderImages(){const box=$('#images');box.innerHTML='';if(!state.images?.length){box.innerHTML='<div class="empty">画像はありません</div>';return}state.images.forEach((im,i)=>{const url=URL.createObjectURL(im.blob);const d=document.createElement('div');d.className='imgcard';d.innerHTML=`<img src="${url}" alt=""><div class="imgname">${esc(im.name.split('/').pop())}</div><div class="row compact"><button class="btn soft tiny" data-img="${i}">画像をコピー</button></div>`;box.appendChild(d)});box.querySelectorAll('[data-img]').forEach(b=>b.onclick=async()=>{const im=state.images[+b.dataset.img];try{await navigator.clipboard.write([new ClipboardItem({[im.blob.type||'image/png']:im.blob})]);b.textContent='コピー済み ✓';setTimeout(()=>b.textContent='画像をコピー',1200)}catch(e){alert('画像コピーに失敗しました。画像を長押しして保存してください。')}})}
 async function loadZip(file){setStatus('ZIPを読み込み中…');try{const files=await unzipRecursive(await file.arrayBuffer());const mdFiles=files.filter(f=>f.name.toLowerCase().endsWith('.md'));if(!mdFiles.length)throw new Error('Markdown記事が見つかりません');let best=mdFiles.sort((a,b)=>b.data.length-a.data.length)[0];const parsed=parseNotionMarkdown(decodeText(best.data));const imgs=files.filter(f=>/\.(png|jpe?g|webp|gif)$/i.test(f.name)).map(f=>{const ext=(f.name.match(/\.([^.]+)$/)||[])[1]?.toLowerCase();const type=ext==='png'?'image/png':ext==='jpg'||ext==='jpeg'?'image/jpeg':ext==='webp'?'image/webp':'image/gif';return{name:f.name,blob:new Blob([f.data],{type})}});state={title:parsed.title,body:parsed.body,images:imgs,sourceName:file.name,savedAt:Date.now()};$('#title').value=state.title;$('#body').value=state.body;await dbSet(state);renderImages();renderPreview();setStatus(`読み込み完了：${esc(file.name)} ／ 画像 ${imgs.length}枚　<span class="persist">● 自動保存中</span>`,true)}catch(e){console.error(e);setStatus(`読み込み失敗：${esc(e.message||String(e))}`,false,true)}}
 
@@ -241,5 +242,6 @@ if(updatedTo){
 }
 })();
 </script>
+<script src="./preflight.js"></script>
 <script src="./publish-extractor.js"></script>
 </body></html>

@@ -1,11 +1,14 @@
-const C='notion-note-beta088-v1';
-const A=['./','./index.html','./manifest.webmanifest','./icon.svg','./banner-haru-tools.png','./banner-x.png','./banner-question.png','./publish-extractor.js','./version.json'];
+const C='notion-note-beta090-v1';
+const A=['./','./index.html','./manifest.webmanifest','./icon.svg','./banner-haru-tools.png','./banner-x.png','./banner-question.png','./preflight.js','./publish-extractor.js','./version.json'];
 
 function injectExtractor(response){
   if(!response)return response;
   return response.text().then(text=>{
+    if(!text.includes('preflight.js')){
+      text=text.replace('<script src="./publish-extractor.js"></script>','<script src="./preflight.js"></script><script src="./publish-extractor.js"></script>');
+    }
     if(!text.includes('publish-extractor.js')){
-      text=text.replace('</body>','<script src="./publish-extractor.js"></script></body>');
+      text=text.replace('</body>','<script src="./preflight.js"></script><script src="./publish-extractor.js"></script></body>');
     }
     const headers=new Headers(response.headers);
     headers.delete('content-length');
@@ -19,7 +22,7 @@ async function precacheFresh(){
   const cache=await caches.open(C);
   await Promise.all(A.map(async path=>{
     const join=path.includes('?')?'&':'?';
-    const response=await fetch(`${path}${join}v=088`,{cache:'reload'});
+    const response=await fetch(`${path}${join}v=090`,{cache:'reload'});
     if(!response.ok)throw new Error(`Precache failed: ${path}`);
     await cache.put(path,response);
   }));
