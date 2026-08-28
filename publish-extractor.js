@@ -3,7 +3,7 @@
 
   const RANGE_START='▼▼▼ note公開本文｜ここから ▼▼▼';
   const RANGE_END='▲▲▲ note公開本文｜ここまで ▲▲▲';
-  const VERSION='0.9.0';
+  const VERSION='0.9.1';
   const START_HEADING_PATTERNS=[/公開稿(?:候補)?/,/(?:note\s*)?本文初稿/];
   let markerState='checking';
   let markerMessage='本文範囲を確認しています';
@@ -38,6 +38,13 @@
       if(/^>\s*[（(]?編集メモ[:：].*有料ライン.*[）)]?\s*$/.test(t))return false;
       return true;
     }).join('\n').replace(/\n{3,}/g,'\n\n').trim();
+  }
+  function findArticleHeading(lines){
+    for(let i=0;i<lines.length;i++){
+      const match=lines[i].trim().match(/^#\s+(.+?)\s*$/);
+      if(match)return{index:i,title:match[1].trim()};
+    }
+    return null;
   }
   function setCopyEnabled(enabled){
     document.querySelectorAll('#copyBody,#copyPlain').forEach(button=>{
@@ -120,15 +127,18 @@
     box.querySelectorAll('input').forEach(input=>input.addEventListener('change',update));
     update();
   }
+  function markerIsOk(){
+    return markerState==='valid'||markerState==='legacy'||markerState==='restored'||markerState==='auto';
+  }
   function renderPreflight(result){
     ensurePanel();
     const badge=document.querySelector('#preflightBadge'),summary=document.querySelector('#preflightSummary');
     const checks=document.querySelector('#preflightChecks'),issues=document.querySelector('#preflightIssues'),placements=document.querySelector('#preflightPlacements');
-    const markerOk=markerState==='valid'||markerState==='legacy'||markerState==='restored',ok=Boolean(markerOk&&result?.ok);
+    const markerOk=markerIsOk(),ok=Boolean(markerOk&&result?.ok);
     badge.textContent=ok?'コピー可':'コピー停止';
     badge.className='gate-badge '+(ok?'gate-ok':'gate-bad');
     summary.textContent=ok?'自動検査に合格しました。コピー時は目次・有料ラインの位置マーカーを本文から自動除外します。':'違反または未確認項目が残っています。修正するまで本文コピーを停止します。';
-    const markerLabel=markerState==='legacy'?'旧形式の本文範囲を認識':markerState==='restored'?'検査済みの端末保存本文を復元':'開始・終了マーカーが各1個あり、順序が正しい';
+    const markerLabel=markerState==='legacy'?'旧形式の本文範囲を認識':markerState==='restored'?'検査済みの端末保存本文を復元':markerState==='auto'?'記事タイトルから公開本文を自動認識':'開始・終了マーカーが各1個あり、順序が正しい';
     const markerCheck={label:markerLabel,ok:markerOk};
     checks.innerHTML=[markerCheck,...(result?.checks||[])].map(item=>`<div class="gate-check ${item.ok?'pass':'fail'}"><span>${item.ok?'✓':'×'}</span>${escHtml(item.label)}</div>`).join('');
     const allIssues=[];
@@ -142,7 +152,7 @@
   function runPreflight(){
     const title=document.querySelector('#title')?.value||'',body=document.querySelector('#body')?.value||'';
     currentResult=window.NotePreflight?window.NotePreflight.validateDocument({title,body}):{ok:false,checks:[],issues:[{message:'OS検査モジュールを読み込めません',line:null,excerpt:''}],placements:[],publishableBody:''};
-    if(currentResult.ok&&(markerState==='valid'||markerState==='legacy'||markerState==='restored'))rememberExtractedSource();
+    if(currentResult.ok&&markerIsOk())rememberExtractedSource();
     renderPreflight(currentResult);
     return currentResult;
   }
@@ -173,10 +183,18 @@
       if(!trimmed){showMarkerError('旧形式の公開本文見出しより後に本文がありません');return false;}
       markerState='legacy';markerMessage='旧形式の公開本文見出しを認識しました';return applyTrimmedBody(body,trimmed);
     }
+    const article=findArticleHeading(lines);
+    if(article){
+      const title=document.querySelector('#title');
+      if(title&&article.title&&title.value.trim()!==article.title){title.value=article.title;title.dispatchEvent(new Event('input',{bubbles:true}));}
+      const trimmed=removeInternalDraftMarkers(lines.slice(article.index+1).join('\n'));
+      if(!trimmed){showMarkerError('記事タイトルより後に本文がありません');return false;}
+      markerState='auto';markerMessage='記事タイトルから公開本文を自動認識しました';return applyTrimmedBody(body,trimmed);
+    }
     if(isRememberedSource()){
       markerState='restored';markerMessage='検査済みの端末保存本文を復元しました';runPreflight();return true;
     }
-    showMarkerError('本文の開始・終了マーカーがありません');return false;
+    showMarkerError('公開本文を自動認識できませんでした');return false;
   }
   function waitForZipLoad(){
     markerState='checking';markerMessage='ZIPの読み込み完了を待っています';setCopyEnabled(false);
@@ -189,7 +207,7 @@
     },100);
   }
   async function copyPublishable(rich){
-    const result=runPreflight(),markerOk=markerState==='valid'||markerState==='legacy'||markerState==='restored';
+    const result=runPreflight(),markerOk=markerIsOk();
     if(!markerOk||!result.ok){document.querySelector('#preflightPanel')?.scrollIntoView({behavior:'smooth',block:'center'});return;}
     const text=result.publishableBody;
     if(rich)await clipboardRich(mdToHtml(text),text);else await navigator.clipboard.writeText(text);
@@ -197,7 +215,7 @@
     button.textContent='コピー済み ✓';setTimeout(()=>button.textContent=label,1000);
   }
   function reportText(){
-    const result=currentResult||runPreflight(),markerOk=markerState==='valid'||markerState==='legacy'||markerState==='restored';
+    const result=currentResult||runPreflight(),markerOk=markerIsOk();
     const lines=[`OS本文コピーゲート：${markerOk&&result.ok?'合格':'不合格'}`,`本文範囲：${markerOk?'合格':'不合格'}${markerMessage?`（${markerMessage}）`:''}`,...result.checks.map(item=>`${item.ok?'✓':'×'} ${item.label}`)];
     if(result.issues.length){lines.push('','修正が必要：');result.issues.forEach(item=>lines.push(`- ${item.line?`L${item.line} `:''}${item.message}${item.excerpt?`｜${item.excerpt}`:''}`));}
     if(result.placements.length){lines.push('','note編集画面での設定位置：');result.placements.forEach(item=>lines.push(`- ${placementText(item)}`));}
@@ -218,5 +236,5 @@
   ensurePanel();setCopyEnabled(false);setTimeout(trimToPublishedDraft,300);setTimeout(trimToPublishedDraft,1000);
   const beta=document.querySelector('.beta');if(beta)beta.textContent=`β ${VERSION}`;
   const bodyNote=document.querySelector('#pane-body .note');
-  if(bodyNote)bodyNote.textContent='開始・終了マーカーの間だけを抽出し、OS本文コピーゲートに合格した本文だけコピーできます。目次・有料ラインの位置マーカーは、設定位置を別表示したうえでコピー本文から自動除外します。';
+  if(bodyNote)bodyNote.textContent='公開範囲マーカーがある場合はその範囲を優先し、ない場合は記事タイトルから公開本文を自動認識します。目次・有料ラインの位置マーカーは、設定位置を別表示したうえでコピー本文から自動除外します。';
 })();
