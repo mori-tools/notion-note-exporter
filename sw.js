@@ -1,4 +1,4 @@
-const C='notion-note-beta090-v1';
+const C='notion-note-beta091-v1';
 const A=['./','./index.html','./manifest.webmanifest','./icon.svg','./banner-haru-tools.png','./banner-x.png','./banner-question.png','./preflight.js','./publish-extractor.js','./version.json'];
 
 function injectExtractor(response){
@@ -22,7 +22,7 @@ async function precacheFresh(){
   const cache=await caches.open(C);
   await Promise.all(A.map(async path=>{
     const join=path.includes('?')?'&':'?';
-    const response=await fetch(`${path}${join}v=090`,{cache:'reload'});
+    const response=await fetch(`${path}${join}v=091`,{cache:'reload'});
     if(!response.ok)throw new Error(`Precache failed: ${path}`);
     await cache.put(path,response);
   }));
@@ -42,11 +42,19 @@ self.addEventListener('fetch',e=>{
 
   if(isAppPage){
     e.respondWith(
-      caches.match('./index.html')
-        .then(r=>r||fetch('./index.html'))
+      fetch('./index.html',{cache:'no-store'})
+        .then(r=>{
+          if(r&&r.ok){const copy=r.clone();caches.open(C).then(c=>c.put('./index.html',copy));return r;}
+          return caches.match('./index.html');
+        })
         .then(injectExtractor)
         .catch(()=>caches.match('./index.html').then(injectExtractor))
     );
+    return;
+  }
+
+  if(url.pathname.endsWith('/version.json')||url.pathname.endsWith('/preflight.js')||url.pathname.endsWith('/publish-extractor.js')||url.pathname.endsWith('/sw.js')){
+    e.respondWith(fetch(e.request,{cache:'no-store'}).catch(()=>caches.match(e.request)));
     return;
   }
 
