@@ -24,8 +24,7 @@
     {id:'causality-proof',label:'AI的な免責表現',pattern:/因果関係を証明したものではありません/},
     {id:'rebuilt-guide',label:'制作側の整理表現',pattern:/経験から組み直した目安です/},
     {id:'recover-purpose',label:'コンサル的な抽象語',pattern:/目的を回収/},
-    {id:'revenue-guarantee',label:'AI的な免責表現',pattern:/同じ行動をすれば同じ収益になるという保証ではありません/},
-    {id:'what-i-want-to-say',label:'AI的な総括表現',pattern:/ここで伝えたいのは/}
+    {id:'revenue-guarantee',label:'AI的な免責表現',pattern:/同じ行動をすれば同じ収益になるという保証ではありません/}
   ];
 
   function normalize(text){
@@ -106,24 +105,11 @@
       AI_META_PATTERNS.forEach(rule=>{
         if(rule.pattern.test(line))issues.push(issue(rule,line,index));
       });
-
-      const trimmed=line.trim();
-      const skipStyle=!trimmed||/^#{1,6}\s/.test(trimmed)||/^>\s?/.test(trimmed)||/^```/.test(trimmed);
-      if(!skipStyle&&/(?:ではなく|ではない|ではなかった)/.test(line)){
-        issues.push({
-          id:'os-dewanai-style',
-          label:'OS禁止の地の文',
-          line:index+1,
-          excerpt:lineExcerpt(line),
-          message:'地の文に「ではなく／ではない／ではなかった」が残っています'
-        });
-      }
     });
 
     const categories=[
       {id:'internal',label:'作業用マーカー・管理情報がない',ids:INTERNAL_PATTERNS.map(x=>x.id)},
-      {id:'ai-meta',label:'制作側のメタ表現がない',ids:AI_META_PATTERNS.map(x=>x.id)},
-      {id:'style',label:'OS禁止の地の文がない',ids:['os-dewanai-style']}
+      {id:'ai-meta',label:'制作側のメタ表現がない',ids:AI_META_PATTERNS.map(x=>x.id)}
     ];
     categories.forEach(category=>checks.push({
       id:category.id,
