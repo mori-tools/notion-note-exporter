@@ -1,4 +1,4 @@
-const C='notion-note-beta091-v1';
+const C='notion-note-beta091-v2';
 const A=['./','./index.html','./manifest.webmanifest','./icon.svg','./banner-haru-tools.png','./banner-x.png','./banner-question.png','./preflight.js','./publish-extractor.js','./version.json'];
 
 function injectExtractor(response){
@@ -10,6 +10,9 @@ function injectExtractor(response){
     if(!text.includes('publish-extractor.js')){
       text=text.replace('</body>','<script src="./preflight.js"></script><script src="./publish-extractor.js"></script></body>');
     }
+    text=text
+      .replace('data-copy-text="https://haru-tools.booth.pm/"','data-copy-text="https://haru-tools.booth.pm/?utm_source=note&utm_medium=referral&utm_campaign=haru_tools"')
+      .replace('<div class="bannerurl">https://haru-tools.booth.pm/</div>','<div class="bannerurl">https://haru-tools.booth.pm/?utm_source=note&utm_medium=referral&utm_campaign=haru_tools</div>');
     const headers=new Headers(response.headers);
     headers.delete('content-length');
     return new Response(text,{status:response.status,statusText:response.statusText,headers});
@@ -22,7 +25,7 @@ async function precacheFresh(){
   const cache=await caches.open(C);
   await Promise.all(A.map(async path=>{
     const join=path.includes('?')?'&':'?';
-    const response=await fetch(`${path}${join}v=091`,{cache:'reload'});
+    const response=await fetch(`${path}${join}v=0912`,{cache:'reload'});
     if(!response.ok)throw new Error(`Precache failed: ${path}`);
     await cache.put(path,response);
   }));
