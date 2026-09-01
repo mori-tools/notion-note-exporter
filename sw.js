@@ -4,9 +4,6 @@ const A=['./','./index.html','./manifest.webmanifest','./icon.svg','./banner-har
 function injectExtractor(response){
   if(!response)return response;
   return response.text().then(text=>{
-    text=text
-      .replace('β 0.9.0','β 0.9.2')
-      .replace("const APP_VERSION='0.9.0';","const APP_VERSION='0.9.2';");
     if(!text.includes('preflight.js')){
       text=text.replace('<script src="./publish-extractor.js"></script>','<script src="./preflight.js"></script><script src="./marker-normalizer.js"></script><script src="./publish-extractor.js"></script>');
     }
@@ -17,6 +14,8 @@ function injectExtractor(response){
       text=text.replace('</body>','<script src="./preflight.js"></script><script src="./marker-normalizer.js"></script><script src="./publish-extractor.js"></script></body>');
     }
     text=text
+      .replace(/β 0\.9\.\d+/g,'β 0.9.2')
+      .replace(/const APP_VERSION='0\.9\.\d+';/,"const APP_VERSION='0.9.2';")
       .replace('data-copy-text="https://haru-tools.booth.pm/"','data-copy-text="https://haru-tools.booth.pm/?utm_source=note&utm_medium=referral&utm_campaign=haru_tools"')
       .replace('<div class="bannerurl">https://haru-tools.booth.pm/</div>','<div class="bannerurl">https://haru-tools.booth.pm/?utm_source=note&utm_medium=referral&utm_campaign=haru_tools</div>');
     const headers=new Headers(response.headers);
