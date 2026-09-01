@@ -1,9 +1,12 @@
-const C='notion-note-beta092-v1';
+const C='notion-note-beta092-v2';
 const A=['./','./index.html','./manifest.webmanifest','./icon.svg','./banner-haru-tools.png','./banner-x.png','./banner-question.png','./preflight.js','./marker-normalizer.js','./publish-extractor.js','./version.json'];
 
 function injectExtractor(response){
   if(!response)return response;
   return response.text().then(text=>{
+    text=text
+      .replace('β 0.9.0','β 0.9.2')
+      .replace("const APP_VERSION='0.9.0';","const APP_VERSION='0.9.2';");
     if(!text.includes('preflight.js')){
       text=text.replace('<script src="./publish-extractor.js"></script>','<script src="./preflight.js"></script><script src="./marker-normalizer.js"></script><script src="./publish-extractor.js"></script>');
     }
@@ -14,7 +17,6 @@ function injectExtractor(response){
       text=text.replace('</body>','<script src="./preflight.js"></script><script src="./marker-normalizer.js"></script><script src="./publish-extractor.js"></script></body>');
     }
     text=text
-      .replace('β 0.9.0','β 0.9.2')
       .replace('data-copy-text="https://haru-tools.booth.pm/"','data-copy-text="https://haru-tools.booth.pm/?utm_source=note&utm_medium=referral&utm_campaign=haru_tools"')
       .replace('<div class="bannerurl">https://haru-tools.booth.pm/</div>','<div class="bannerurl">https://haru-tools.booth.pm/?utm_source=note&utm_medium=referral&utm_campaign=haru_tools</div>');
     const headers=new Headers(response.headers);
@@ -29,7 +31,7 @@ async function precacheFresh(){
   const cache=await caches.open(C);
   await Promise.all(A.map(async path=>{
     const join=path.includes('?')?'&':'?';
-    const response=await fetch(`${path}${join}v=0921`,{cache:'reload'});
+    const response=await fetch(`${path}${join}v=0922`,{cache:'reload'});
     if(!response.ok)throw new Error(`Precache failed: ${path}`);
     await cache.put(path,response);
   }));
