@@ -1,4 +1,4 @@
-const C='notion-note-beta092-v2';
+const C='notion-note-beta093-v1';
 const A=['./','./index.html','./manifest.webmanifest','./icon.svg','./banner-haru-tools.png','./banner-x.png','./banner-question.png','./preflight.js','./marker-normalizer.js','./publish-extractor.js','./version.json'];
 
 function injectExtractor(response){
@@ -14,8 +14,8 @@ function injectExtractor(response){
       text=text.replace('</body>','<script src="./preflight.js"></script><script src="./marker-normalizer.js"></script><script src="./publish-extractor.js"></script></body>');
     }
     text=text
-      .replace(/β 0\.9\.\d+/g,'β 0.9.2')
-      .replace(/const APP_VERSION='0\.9\.\d+';/,"const APP_VERSION='0.9.2';")
+      .replace(/β 0\.9\.\d+/g,'β 0.9.3')
+      .replace(/const APP_VERSION='0\.9\.\d+';/,"const APP_VERSION='0.9.3';")
       .replace('data-copy-text="https://haru-tools.booth.pm/"','data-copy-text="https://haru-tools.booth.pm/?utm_source=note&utm_medium=referral&utm_campaign=haru_tools"')
       .replace('<div class="bannerurl">https://haru-tools.booth.pm/</div>','<div class="bannerurl">https://haru-tools.booth.pm/?utm_source=note&utm_medium=referral&utm_campaign=haru_tools</div>');
     const headers=new Headers(response.headers);
@@ -30,47 +30,28 @@ async function precacheFresh(){
   const cache=await caches.open(C);
   await Promise.all(A.map(async path=>{
     const join=path.includes('?')?'&':'?';
-    const response=await fetch(`${path}${join}v=0922`,{cache:'reload'});
+    const response=await fetch(`${path}${join}v=0931`,{cache:'reload'});
     if(!response.ok)throw new Error(`Precache failed: ${path}`);
     await cache.put(path,response);
   }));
 }
 
-self.addEventListener('install',e=>e.waitUntil(
-  precacheFresh().then(()=>self.skipWaiting())
-));
-
-self.addEventListener('activate',e=>e.waitUntil(
-  caches.keys().then(xs=>Promise.all(xs.filter(x=>x!==C).map(x=>caches.delete(x)))).then(()=>self.clients.claim())
-));
+self.addEventListener('install',e=>e.waitUntil(precacheFresh().then(()=>self.skipWaiting())));
+self.addEventListener('activate',e=>e.waitUntil(caches.keys().then(xs=>Promise.all(xs.filter(x=>x!==C).map(x=>caches.delete(x)))).then(()=>self.clients.claim())));
 
 self.addEventListener('fetch',e=>{
   const url=new URL(e.request.url);
   const isAppPage=e.request.mode==='navigate'||url.pathname.endsWith('/index.html')||url.pathname.endsWith('/');
-
   if(isAppPage){
-    e.respondWith(
-      fetch('./index.html',{cache:'no-store'})
-        .then(r=>{
-          if(r&&r.ok){const copy=r.clone();caches.open(C).then(c=>c.put('./index.html',copy));return r;}
-          return caches.match('./index.html');
-        })
-        .then(injectExtractor)
-        .catch(()=>caches.match('./index.html').then(injectExtractor))
-    );
+    e.respondWith(fetch('./index.html',{cache:'no-store'}).then(r=>{
+      if(r&&r.ok){const copy=r.clone();caches.open(C).then(c=>c.put('./index.html',copy));return r;}
+      return caches.match('./index.html');
+    }).then(injectExtractor).catch(()=>caches.match('./index.html').then(injectExtractor)));
     return;
   }
-
   if(url.pathname.endsWith('/version.json')||url.pathname.endsWith('/preflight.js')||url.pathname.endsWith('/marker-normalizer.js')||url.pathname.endsWith('/publish-extractor.js')||url.pathname.endsWith('/sw.js')){
     e.respondWith(fetch(e.request,{cache:'no-store'}).catch(()=>caches.match(e.request)));
     return;
   }
-
-  e.respondWith(
-    caches.match(e.request).then(r=>r||fetch(e.request).then(res=>{
-      const copy=res.clone();
-      caches.open(C).then(c=>c.put(e.request,copy));
-      return res;
-    }).catch(()=>caches.match('./index.html')))
-  );
+  e.respondWith(caches.match(e.request).then(r=>r||fetch(e.request).then(res=>{const copy=res.clone();caches.open(C).then(c=>c.put(e.request,copy));return res;}).catch(()=>caches.match('./index.html'))));
 });
