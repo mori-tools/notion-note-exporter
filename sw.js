@@ -1,16 +1,20 @@
-const C='notion-note-beta091-v2';
-const A=['./','./index.html','./manifest.webmanifest','./icon.svg','./banner-haru-tools.png','./banner-x.png','./banner-question.png','./preflight.js','./publish-extractor.js','./version.json'];
+const C='notion-note-beta092-v1';
+const A=['./','./index.html','./manifest.webmanifest','./icon.svg','./banner-haru-tools.png','./banner-x.png','./banner-question.png','./preflight.js','./marker-normalizer.js','./publish-extractor.js','./version.json'];
 
 function injectExtractor(response){
   if(!response)return response;
   return response.text().then(text=>{
     if(!text.includes('preflight.js')){
-      text=text.replace('<script src="./publish-extractor.js"></script>','<script src="./preflight.js"></script><script src="./publish-extractor.js"></script>');
+      text=text.replace('<script src="./publish-extractor.js"></script>','<script src="./preflight.js"></script><script src="./marker-normalizer.js"></script><script src="./publish-extractor.js"></script>');
+    }
+    if(!text.includes('marker-normalizer.js')){
+      text=text.replace('<script src="./publish-extractor.js"></script>','<script src="./marker-normalizer.js"></script><script src="./publish-extractor.js"></script>');
     }
     if(!text.includes('publish-extractor.js')){
-      text=text.replace('</body>','<script src="./preflight.js"></script><script src="./publish-extractor.js"></script></body>');
+      text=text.replace('</body>','<script src="./preflight.js"></script><script src="./marker-normalizer.js"></script><script src="./publish-extractor.js"></script></body>');
     }
     text=text
+      .replace('β 0.9.0','β 0.9.2')
       .replace('data-copy-text="https://haru-tools.booth.pm/"','data-copy-text="https://haru-tools.booth.pm/?utm_source=note&utm_medium=referral&utm_campaign=haru_tools"')
       .replace('<div class="bannerurl">https://haru-tools.booth.pm/</div>','<div class="bannerurl">https://haru-tools.booth.pm/?utm_source=note&utm_medium=referral&utm_campaign=haru_tools</div>');
     const headers=new Headers(response.headers);
@@ -25,7 +29,7 @@ async function precacheFresh(){
   const cache=await caches.open(C);
   await Promise.all(A.map(async path=>{
     const join=path.includes('?')?'&':'?';
-    const response=await fetch(`${path}${join}v=0912`,{cache:'reload'});
+    const response=await fetch(`${path}${join}v=0921`,{cache:'reload'});
     if(!response.ok)throw new Error(`Precache failed: ${path}`);
     await cache.put(path,response);
   }));
@@ -56,7 +60,7 @@ self.addEventListener('fetch',e=>{
     return;
   }
 
-  if(url.pathname.endsWith('/version.json')||url.pathname.endsWith('/preflight.js')||url.pathname.endsWith('/publish-extractor.js')||url.pathname.endsWith('/sw.js')){
+  if(url.pathname.endsWith('/version.json')||url.pathname.endsWith('/preflight.js')||url.pathname.endsWith('/marker-normalizer.js')||url.pathname.endsWith('/publish-extractor.js')||url.pathname.endsWith('/sw.js')){
     e.respondWith(fetch(e.request,{cache:'no-store'}).catch(()=>caches.match(e.request)));
     return;
   }
