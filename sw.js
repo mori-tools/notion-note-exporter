@@ -1,5 +1,6 @@
-const C='notion-note-beta093-v1';
+const C='notion-note-beta094-v1';
 const A=['./','./index.html','./manifest.webmanifest','./icon.svg','./banner-haru-tools.png','./banner-x.png','./banner-question.png','./preflight.js','./marker-normalizer.js','./publish-extractor.js','./version.json'];
+const APP_VERSION='0.9.4';
 
 function injectExtractor(response){
   if(!response)return response;
@@ -14,13 +15,23 @@ function injectExtractor(response){
       text=text.replace('</body>','<script src="./preflight.js"></script><script src="./marker-normalizer.js"></script><script src="./publish-extractor.js"></script></body>');
     }
     text=text
-      .replace(/β 0\.9\.\d+/g,'β 0.9.3')
-      .replace(/const APP_VERSION='0\.9\.\d+';/,"const APP_VERSION='0.9.3';")
+      .replace(/β 0\.9\.\d+/g,`β ${APP_VERSION}`)
+      .replace(/const APP_VERSION='0\.9\.\d+';/,`const APP_VERSION='${APP_VERSION}';`)
       .replace('data-copy-text="https://haru-tools.booth.pm/"','data-copy-text="https://haru-tools.booth.pm/?utm_source=note&utm_medium=referral&utm_campaign=haru_tools"')
       .replace('<div class="bannerurl">https://haru-tools.booth.pm/</div>','<div class="bannerurl">https://haru-tools.booth.pm/?utm_source=note&utm_medium=referral&utm_campaign=haru_tools</div>');
     const headers=new Headers(response.headers);
     headers.delete('content-length');
     return new Response(text,{status:response.status,statusText:response.statusText,headers});
+  });
+}
+
+function injectRuntimeVersion(response){
+  if(!response)return response;
+  return response.text().then(text=>{
+    const patch=`\n;(()=>{const sync=()=>{const el=document.querySelector('.beta');if(el)el.textContent='β ${APP_VERSION}';};if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',sync,{once:true});else sync();})();\n`;
+    const headers=new Headers(response.headers);
+    headers.delete('content-length');
+    return new Response(patch+text,{status:response.status,statusText:response.statusText,headers});
   });
 }
 
@@ -30,7 +41,7 @@ async function precacheFresh(){
   const cache=await caches.open(C);
   await Promise.all(A.map(async path=>{
     const join=path.includes('?')?'&':'?';
-    const response=await fetch(`${path}${join}v=0931`,{cache:'reload'});
+    const response=await fetch(`${path}${join}v=0941`,{cache:'reload'});
     if(!response.ok)throw new Error(`Precache failed: ${path}`);
     await cache.put(path,response);
   }));
@@ -49,7 +60,11 @@ self.addEventListener('fetch',e=>{
     }).then(injectExtractor).catch(()=>caches.match('./index.html').then(injectExtractor)));
     return;
   }
-  if(url.pathname.endsWith('/version.json')||url.pathname.endsWith('/preflight.js')||url.pathname.endsWith('/marker-normalizer.js')||url.pathname.endsWith('/publish-extractor.js')||url.pathname.endsWith('/sw.js')){
+  if(url.pathname.endsWith('/publish-extractor.js')){
+    e.respondWith(fetch(e.request,{cache:'no-store'}).catch(()=>caches.match(e.request)).then(injectRuntimeVersion));
+    return;
+  }
+  if(url.pathname.endsWith('/version.json')||url.pathname.endsWith('/preflight.js')||url.pathname.endsWith('/marker-normalizer.js')||url.pathname.endsWith('/sw.js')){
     e.respondWith(fetch(e.request,{cache:'no-store'}).catch(()=>caches.match(e.request)));
     return;
   }
